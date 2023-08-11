@@ -30,7 +30,7 @@ impl fmt::Display for Task {
 
 pub fn add_task(journal_path: PathBuf, task: Task) -> Result<()> {
     // Open the file.
-    let mut file = OpenOptions::new()
+    let file = OpenOptions::new()
         .read(true)
         .write(true)
         .create(true)
