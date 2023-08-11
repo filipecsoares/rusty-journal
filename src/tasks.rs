@@ -1,6 +1,10 @@
 use chrono::{serde::ts_seconds, DateTime, Local, Utc};
 use serde::Deserialize;
 use serde::Serialize;
+use std::fmt;
+use std::fs::{File, OpenOptions};
+use std::path::PathBuf;
+use std::io::{Error, ErrorKind, Result, Seek, SeekFrom};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Task {
@@ -15,4 +19,37 @@ impl Task {
         let created_at: DateTime<Utc> = Utc::now();
         Task { text, created_at }
     }
+}
+
+impl fmt::Display for Task {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let created_at = self.created_at.with_timezone(&Local).format("%F %H:%M");
+        write!(f, "{:<50} [{}]", self.text, created_at)
+    }
+}
+
+pub fn add_task(journal_path: PathBuf, task: Task) -> Result<()> {
+    // Open the file.
+    let mut file = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create(true)
+        .open(journal_path)?;
+    // Consume the file's contents as a vector of tasks.
+    let mut tasks = collect_tasks(&file)?;
+    // Write the modified task list back into the file.
+    tasks.push(task);
+    serde_json::to_writer(file, &tasks)?;
+    Ok(())
+}
+
+fn collect_tasks(mut file: &File) -> Result<Vec<Task>> {
+    file.seek(SeekFrom::Start(0))?; // Rewind the file before.
+    let tasks = match serde_json::from_reader(file) {
+        Ok(tasks) => tasks,
+        Err(e) if e.is_eof() => Vec::new(),
+        Err(e) => Err(e)?,
+    };
+    file.seek(SeekFrom::Start(0))?; // Rewind the file after.
+    Ok(tasks)
 }
