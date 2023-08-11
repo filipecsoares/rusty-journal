@@ -65,6 +65,25 @@ pub fn complete_task(journal_path: PathBuf, task_position: usize) -> Result<()> 
     Ok(())
 }
 
+pub fn list_tasks(journal_path: PathBuf) -> Result<()> {
+    // Open the file.
+    let file = OpenOptions::new().read(true).open(journal_path)?;
+    // Parse the file and collect the tasks.
+    let tasks = collect_tasks(&file)?;
+
+    // Enumerate and display tasks, if any.
+    if tasks.is_empty() {
+        println!("Task list is empty!");
+    } else {
+        let mut order: u32 = 1;
+        for task in tasks {
+            println!("{}: {}", order, task);
+            order += 1;
+        }
+    }
+    Ok(())
+}
+
 fn collect_tasks(mut file: &File) -> Result<Vec<Task>> {
     file.seek(SeekFrom::Start(0))?; // Rewind the file before.
     let tasks = match serde_json::from_reader(file) {
