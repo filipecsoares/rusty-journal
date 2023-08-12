@@ -75,7 +75,7 @@ cargo run -- add "Study Rust"
 cargo run -- done 1
 ```
 
-### Generate a executable file to use without Cargo or Rust
+### Generate an executable file to use without Cargo or Rust
 
 ```bash
 cargo build --release
