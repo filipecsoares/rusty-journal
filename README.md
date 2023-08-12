@@ -74,3 +74,11 @@ cargo run -- add "Study Rust"
 ```bash
 cargo run -- done 1
 ```
+
+### Generate a executable file to use without Cargo or Rust
+
+```bash
+cargo build --release
+```
+
+The file 'rusty-journal' or 'rusty-journal.exe' will be generated in the 'target/release' directory.
