@@ -3,7 +3,15 @@ mod cli;
 mod tasks;
 
 use cli::{Action::*, CommandLineArgs};
+use std::path::PathBuf;
 use tasks::Task;
+
+fn find_default_journal_file() -> Option<PathBuf> {
+    home::home_dir().map(|mut path| {
+        path.push(".rusty-journal.json");
+        path
+    })
+}
 
 fn main() {
     // Get the command-line arguments.
@@ -12,8 +20,10 @@ fn main() {
         journal_file,
     } = CommandLineArgs::from_args();
 
-    // Unpack the journal file.
-    let journal_file = journal_file.expect("Failed to find journal file");
+    // Unpack the journal file or get the default.
+    let journal_file = journal_file
+        .or_else(find_default_journal_file)
+        .expect("Failed to find journal file.");
 
     // Perform the action.
     match action {
